@@ -1,0 +1,78 @@
+{{- bos_token -}}
+{%- set keep_past_thinking = keep_past_thinking | default(false) -%}
+{%- set ns = namespace(system_prompt="") -%}
+{%- if messages[0]["role"] == "system" -%}
+    {%- set ns.system_prompt = messages[0]["content"] -%}
+    {%- set messages = messages[1:] -%}
+{%- endif -%}
+{%- if tools -%}
+    {%- set ns.system_prompt = ns.system_prompt + ("\n" if ns.system_prompt else "") + "List of tools: [" -%}
+    {%- for tool in tools -%}
+        {%- if tool is not string -%}{%- set tool = tool | tojson -%}{%- endif -%}
+        {%- set ns.system_prompt = ns.system_prompt + tool -%}
+        {%- if not loop.last -%}{%- set ns.system_prompt = ns.system_prompt + ", " -%}{%- endif -%}
+    {%- endfor -%}
+    {%- set ns.system_prompt = ns.system_prompt + "]" -%}
+{%- endif -%}
+{%- if ns.system_prompt -%}{{- "<|im_start|>system\n" + ns.system_prompt + "<|im_end|>\n" -}}{%- endif -%}
+{%- set ns.last_assistant_index = -1 -%}
+{%- for message in messages -%}
+    {%- if message["role"] == "assistant" -%}{%- set ns.last_assistant_index = loop.index0 -%}{%- endif -%}
+{%- endfor -%}
+{%- macro pyval(v) -%}
+    {%- if v is none -%}None{%- elif v is boolean and v -%}True{%- elif v is boolean and not v -%}False
+    {%- elif v is string -%}{{ v | tojson }}{%- elif v is mapping -%}{
+        {%- for mk, mv in v.items() -%}{{ mk | tojson }}: {{ pyval(mv) }}{%- if not loop.last -%}, {% endif -%}{%- endfor -%}}
+    {%- elif v is iterable -%}[{%- for item in v -%}{{ pyval(item) }}{%- if not loop.last -%}, {% endif -%}{%- endfor -%}]
+    {%- else -%}{{ v }}{%- endif -%}
+{%- endmacro -%}
+{%- for message in messages -%}
+    {{- "<|im_start|>" + message["role"] + "\n" -}}
+    {%- if message["role"] == "assistant" -%}
+        {%- set text_content = message["content"] if "content" in message and message["content"] is string else "" -%}
+        {%- set tc = message["tool_calls"] if "tool_calls" in message else none -%}
+        {%- if tc -%}
+            {%- set ns.tc_parts = [] -%}
+            {%- for call in tc -%}
+                {%- if call is mapping -%}{%- set func = call["function"] -%}{%- else -%}{%- set func = call.function -%}{%- endif -%}
+                {%- if func is mapping -%}
+                    {%- set fname = func["name"] -%}
+                    {%- set fargs = func.get("arguments", {}) if func.get is defined else func["arguments"] if "arguments" in func else {} -%}
+                {%- else -%}
+                    {%- set fname = func.name -%}
+                    {%- set fargs = func.arguments if func.arguments is defined else {} -%}
+                {%- endif -%}
+                {%- if fargs is mapping -%}
+                    {%- set ns.kv_parts = [] -%}
+                    {%- for k, v in fargs.items() -%}{%- set ns.kv_parts = ns.kv_parts + [k + "=" + pyval(v)] -%}{%- endfor -%}
+                    {%- set ns.tc_parts = ns.tc_parts + [fname + "(" + ns.kv_parts | join(", ") + ")"] -%}
+                {%- elif fargs is string -%}
+                    {%- set ns.tc_parts = ns.tc_parts + [fname + "(" + fargs + ")"] -%}
+                {%- else -%}
+                    {%- set ns.tc_parts = ns.tc_parts + [fname + "()"] -%}
+                {%- endif -%}
+            {%- endfor -%}
+            {%- set tool_call_str = "<|tool_call_start|>[" + ns.tc_parts | join(", ") + "]<|tool_call_end|>" -%}
+        {%- else -%}
+            {%- set tool_call_str = "" -%}
+        {%- endif -%}
+        {%- if text_content and tool_call_str -%}{%- set content = text_content + tool_call_str -%}
+        {%- elif tool_call_str -%}{%- set content = tool_call_str -%}
+        {%- else -%}{%- set content = text_content -%}{%- endif -%}
+        {%- if not keep_past_thinking and loop.index0 != ns.last_assistant_index -%}
+            {%- if "</think>" in content -%}{%- set content = content.split("</think>")[-1] | trim -%}{%- endif -%}
+        {%- endif -%}
+        {{- content -}}
+    {%- elif message["role"] == "tool" -%}
+        {%- set content = message["content"] if "content" in message else "" -%}
+        {%- if content is none -%}{%- set content = "" -%}{%- endif -%}
+        {%- if content is not string -%}{%- set content = content | tojson -%}{%- endif -%}
+        {{- content -}}
+    {%- else -%}
+        {%- set content = message["content"] -%}
+        {%- if content is not string -%}{%- set content = content | tojson -%}{%- endif -%}
+        {{- content -}}
+    {%- endif -%}
+    {{- "<|im_end|>\n" -}}
+{%- endfor -%}
+{%- if add_generation_prompt -%}{{- "<|im_start|>assistant\n" -}}{%- endif -%}

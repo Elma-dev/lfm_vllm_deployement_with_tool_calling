@@ -9,7 +9,7 @@ cmd = [
     "-m",
     "vllm.entrypoints.openai.api_server",
     "--model",
-    "LiquidAI/LFM2.5-1.2B-Instruct",  # ← swap to your model
+    "LiquidAI/LFM2.5-1.2B-Thinking",  # ← swap to your model
     "--host",
     "0.0.0.0",
     "--port",
@@ -25,6 +25,8 @@ cmd = [
     "/content/lfm_tool_parser.py",  # ← plugin file
     "--tool-call-parser",
     "lfm",  # ← registered name
+    "--reasoning-parser",
+    "deepseek_r1",  # uses <think> tags, same format as LFM2.5-Thinking
     "--trust-remote-code",
 ]
 

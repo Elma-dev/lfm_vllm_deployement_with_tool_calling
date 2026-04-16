@@ -19,11 +19,7 @@ docker run -d --name grafana -p 3000:3000 grafana/grafana-oss
 ```
 
 3.Connect them in Grafana
-	Go to http://localhost:3000 (Login: admin/admin).
 
-Go to Connections 
-
-3.Connect them in Grafana
 	1. Go to http://localhost:3000 (Login: admin/admin).
 	2. Go to Connections > Data Sources > Add Data Source.
 	3. Choose Prometheus.
@@ -31,6 +27,7 @@ Go to Connections
 	5.Click Save & Test.
 
 4.mport the vLLM Dashboard
+
 	1. In Grafana, click the + (New) > Import.
 	2. Enter Dashboard ID: `24756`
 	3. Load

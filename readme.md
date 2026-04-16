@@ -1,7 +1,8 @@
 1. install requirements
 
 ```
-uv pip install -r requirements.py```
+uv pip install -r requirements.py
+```
 
 2. run server:
 

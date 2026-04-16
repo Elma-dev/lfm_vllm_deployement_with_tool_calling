@@ -1,0 +1,6 @@
+scrape_configs:
+  - job_name: 'vllm-zrok'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['yx32yywjamdb.shares.zrok.io'] # Your zrok host
+    scheme: https

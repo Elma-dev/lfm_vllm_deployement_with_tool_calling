@@ -26,7 +26,7 @@ docker run -d --name grafana -p 3000:3000 grafana/grafana-oss
 	4. In the URL field, type: http://host.docker.internal:9090 (or the IP of your machine).
 	5.Click Save & Test.
 
-4.mport the vLLM Dashboard
+4. import the vLLM Dashboard
 
 	1. In Grafana, click the + (New) > Import.
 	2. Enter Dashboard ID: `24756`

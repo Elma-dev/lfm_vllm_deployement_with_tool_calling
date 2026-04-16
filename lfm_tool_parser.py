@@ -91,7 +91,7 @@ def _parse_tool_calls(inner: str) -> list:
 
 @ToolParserManager.register_module(["lfm"])
 class LFMToolParser(ToolParser):
-    def __init__(self, tokenizer: TokenizerLike):
+    def __init__(self, tokenizer: TokenizerLike, tools=None):
         super().__init__(tokenizer)
         self._tool_call_buffer = ""
         self._streamed_args: dict = {}

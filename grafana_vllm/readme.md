@@ -18,7 +18,7 @@ docker run -d --name prometheus -p 9090:9090 -v $(pwd)/prometheus.yml:/etc/prome
 docker run -d --name grafana -p 3000:3000 grafana/grafana-oss
 ```
 
-3.Connect them in Grafana
+3. Connect them in Grafana
 
 	1. Go to http://localhost:3000 (Login: admin/admin).
 	2. Go to Connections > Data Sources > Add Data Source.

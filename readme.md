@@ -18,3 +18,14 @@ or dirce CLI command:
 vllm serve --model LiquidAI/LFM2.5-1.2B-instruct --max-model-len 2048 --host 0.0.0.0 --port 8000 --chat-template ./tool_chat_template_lfm
 .jinja --enable-auto-tool-choice --tool-parser-plugin ./lfm_tool_parser.py --tool-call-parser lfm --trust-remote-code 
 ```
+
+you can also play with:
+
+```
+--gpu-memory-utilization 0.5
+``
+
+finally you can expload your model externaly by using:
+
+- zrok (free)
+- cloudflared: `cloudflared tunnel --url http://localhost:8000`

@@ -1,7 +1,9 @@
 1. install requirements
 
-```
-uv pip install -r requirements.py
+```bash
+uv pip install -r requirements.txt
+# Install CUDA 12 runtimes if encounter libcudart.so.12 errors
+uv pip install nvidia-cuda-runtime-cu12 nvidia-cudnn-cu12 nvidia-cublas-cu12
 ```
 
 2. run server:

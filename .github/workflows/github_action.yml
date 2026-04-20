@@ -24,4 +24,4 @@ jobs:
           file: runpod/Dockerfile
           push: true
           platforms: linux/amd64
-          tags: your-username/lfm-vllm:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lfm-vllm:latest

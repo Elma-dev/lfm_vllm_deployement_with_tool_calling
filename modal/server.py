@@ -22,6 +22,8 @@ MINUTE = 60
 VLLM_PORT = 8000
 FAST_BOOT = False
 
+with vllm_image.imports():
+    import requests
 
 @app.function(
     image=vllm_image,
@@ -32,6 +34,9 @@ FAST_BOOT = False
         "/root/.cache/huggingface": hf_cache_vol,
         "/root/.cache/vllm": vllm_cache_vol,
     },
+    enable_memory_snapshot = True, # CPU snapshot
+    experimental_options = {"enable_gpu_snapshot":True} # GPU snapshot,
+    min_containers=0
 )
 @modal.concurrent(max_inputs=100)
 @modal.web_server(port=VLLM_PORT, startup_timeout=10 * MINUTE)

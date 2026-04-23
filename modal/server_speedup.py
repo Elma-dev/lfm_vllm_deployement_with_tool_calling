@@ -26,6 +26,7 @@ N_GPUS = 1
 MINUTE = 60
 VLLM_PORT = 8000
 FAST_BOOT = False
+REGION = "us-east"
 
 with vllm_image.imports():
     import requests
@@ -82,7 +83,7 @@ def wake_up():
 @app.cls(
     image=vllm_image,
     gpu=f"A10:{N_GPUS}",
-    scaledown_window=3 * MINUTE,
+    scaledown_window=2 * MINUTE,
     timeout=10 * MINUTE,
     volumes={
         "/root/.cache/huggingface": hf_cache_vol,
@@ -91,10 +92,12 @@ def wake_up():
     enable_memory_snapshot=True,  # CPU snapshot
     experimental_options={"enable_gpu_snapshot": True},  # GPU snapshot,
     min_containers=0,
+    max_containers=2,
+    region=REGION,
 )
-@modal.concurrent(max_inputs=100)
+@modal.concurrent(max_inputs=50)
 # @modal.web_server(port=VLLM_PORT, startup_timeout=10 * MINUTE)
-# @modal.experimental.http_server(port=VLLM_PORT, startup_timeout=10 * MINUTE)ex
+# @modal.experimental.http_server(port=VLLM_PORT, startup_timeout=10 * MINUTE)
 class LfmVllmInferenceSpeedUp:
     @modal.enter(snap=True)
     def startup(self):
